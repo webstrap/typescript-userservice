@@ -1,0 +1,10 @@
+.DS_STORE
+node_modules
+.module-cache
+*.log*
+package-lock.json
+dist
+coverage
+config/test.json
+config/production.json
+config/development.json

@@ -1,0 +1,12 @@
+{
+    "defaultSeverity": "error",
+    "extends": "tslint:recommended",
+    "jsRules": {},
+    "rules": {
+        "indent": [true, "spaces", 4],
+        "no-unused-variable": true,
+        "suppressImplicitAnyIndexErrors": true,
+        "interface-name": [false]
+    },
+    "rulesDirectory": []
+}

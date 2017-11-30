@@ -1,0 +1,30 @@
+version: '2'
+
+services:
+  user-service:
+    image: 'user-service:latest'
+    build:
+      dockerfile: 'docker/Dockerfile'
+      context: .
+    volumes:
+      - .:/opt/backend
+    ports:
+      - '5555:5555'
+    environment:
+      NODE_ENV: test
+      # host: mongodb is the "links" that is defined below
+      NODE_CONFIG: '{"mongo":{"host":"mongodb"}}'
+    links: 
+      - mongodb
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: 'mongo:3.4.9'
+    ports:
+      - 2017:2017
+    volumes:
+      - backend-mongodb:/data/db
+
+volumes:
+  backend-mongodb:

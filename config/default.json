@@ -1,0 +1,26 @@
+{
+    "server": {
+        "port": 5555,
+        "host": "localhost",
+        "protocol": "http",
+        "email": "admin.user.created@bootup.com"
+    },
+    "mongo": {
+        "port": 27017,
+        "host": "127.0.0.1",
+        "database": "userservice",
+        "loggerLevel": "error"
+    },
+    "passport": {
+        "google": {
+            "callbackURL":"http://localhost:5555/login/google/callback",
+            "clientID": "XXX-YOUR-ID-HERE-XXX.apps.googleusercontent.com",
+            "clientSecret": "XXX-YOUR-SECRET-HERE-XXX"
+        }
+    },
+    "cookie": {
+        "maxAge": 864000000,
+        "name": "session",
+        "secret": "XXX-SECRET-COOKIE-PASSPHRASE-XXX"
+    }
+}
