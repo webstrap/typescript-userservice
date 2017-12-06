@@ -1,10 +1,14 @@
 # TypeScript User Service
 
+[![CircleCI](https://circleci.com/gh/webstrap/typescript-userservice.svg?style=svg)](https://circleci.com/gh/webstrap/typescript-userservice)
+
 This is a generic user service that supports:
 
  - Create/Read/Update/Delete Users and Roles
  - Login via Google
+ - Send Messages between Users
  TODO: Facebook and Email/Password
+ TODO: unique index on mongo not working
 
 The purpose of this project is to create a mostly TypeScript based stack, that can serve as a base project, which provides at least example usage for the most important patterns.
 

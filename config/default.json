@@ -9,7 +9,10 @@
         "port": 27017,
         "host": "127.0.0.1",
         "database": "userservice",
-        "loggerLevel": "error"
+        "loggerLevel": "error",
+        "username": "",
+        "password": "",
+        "authSource": "admin"
     },
     "passport": {
         "google": {
@@ -21,6 +24,7 @@
     "cookie": {
         "maxAge": 864000000,
         "name": "session",
-        "secret": "XXX-SECRET-COOKIE-PASSPHRASE-XXX"
+        "secret": "XXX-SECRET-COOKIE-PASSPHRASE-XXX",
+        "httpOnly": true
     }
 }

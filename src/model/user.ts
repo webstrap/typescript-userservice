@@ -7,7 +7,12 @@ import { ROLES } from "../config/accesscontrol";
  * Base User Document
  */
 @Entity()
-export default class User {
+export default class User implements DisplayUser {
+
+    /**
+     * This field is used for the route and permissions
+     */
+    public static resourceName: string = "users";
 
     @ObjectIdColumn()
     public id: ObjectID;
@@ -42,9 +47,22 @@ export default class User {
     public facebook?: string;
 
     @Column()
-    public roles: string[] = [ROLES.user];
+    public roles: ROLES[] = [ROLES.user];
 
-    constructor( user: any ) {
+    constructor( user?: ConstructorUser ) {
         Object.assign(this, user);
     }
+}
+
+export interface DisplayUser {
+    id: ObjectID;
+    name?: string;
+}
+
+export interface ConstructorUser {
+    name?: string;
+    email?: string;
+    google?: string;
+    facebook?: string;
+    roles?: ROLES[];
 }

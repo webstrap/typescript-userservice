@@ -25,10 +25,10 @@
     },{
         "type": "node",
         "request": "launch",
-        "name": "Launch Tests",
+        "name": "Launch Unit Tests",
         "cwd": "${workspaceRoot}",
         "args": [
-            "${workspaceRoot}/node_modules/.bin/jest"
+            "${workspaceRoot}/node_modules/.bin/jest", "./test/unit", "./src"
         ],
         "runtimeArgs": [
             "--nolazy", "-r", "ts-node/register"
@@ -38,7 +38,30 @@
         "stopOnEntry": false,
         "smartStep": true,
         "skipFiles": [
-            "<node_internals>/**"
+            "<node_internals>/**",
+            "node_modules",
+            "dist"
+        ]
+    },
+    {
+        "type": "node",
+        "request": "launch",
+        "name": "Launch API Tests",
+        "cwd": "${workspaceRoot}",
+        "args": [
+            "${workspaceRoot}/node_modules/.bin/jest", "./test/api", "./src"
+        ],
+        "runtimeArgs": [
+            "--nolazy", "-r", "ts-node/register"
+        ],
+        "sourceMaps": true,
+        "protocol": "inspector",
+        "stopOnEntry": false,
+        "smartStep": true,
+        "skipFiles": [
+            "<node_internals>/**",
+            "node_modules",
+            "dist"
         ]
     }
     ]

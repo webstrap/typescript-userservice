@@ -35,12 +35,12 @@ export default class LoginController {
         let user: User;
         // connect google with the user in the current session
         if ( req.user && req.user.id ) {
-            const connectUser = await this.userRepository.findOneById(req.user.id);
-            if (!connectUser) {
+            user = await this.userRepository.findOneById(req.user.id);
+            if (!user) {
                 return done(new InvalidSessionError("user not found"), null);
             }
-            connectUser.google = profile.id;
-            this.userRepository.save(connectUser);
+            user.google = profile.id;
+            this.userRepository.save(user);
         }
         // otherwise try to find an existing user for login
         if ( !user ) {
@@ -69,7 +69,7 @@ export default class LoginController {
 
     public getGoogleCallbackRedirect(req: Request, res: Response, next: NextFunction): void {
         if (req.user && req.user.id) {
-            res.location(`/users/${req.user.id}` );
+            res.location(`/${User.resourceName}/${req.user.id}` );
         }
         let status = 302;
         if ( req.session.newUser ) {

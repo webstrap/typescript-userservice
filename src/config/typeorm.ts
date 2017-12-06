@@ -1,5 +1,6 @@
 import * as config from "config";
 import { Connection, createConnection } from "typeorm";
+import Message from "../model/message";
 import User from "../model/user";
 
 export function configureTypeORM(): Promise<Connection> {
@@ -8,6 +9,7 @@ export function configureTypeORM(): Promise<Connection> {
         {
             entities: [
                 User, // IMPORTANT: add new entities here
+                Message,
             ],
             type: "mongodb",
         });

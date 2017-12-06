@@ -12,8 +12,16 @@ services:
       - '5555:5555'
     environment:
       NODE_ENV: test
-      # host: mongodb is the "links" that is defined below
-      NODE_CONFIG: '{"mongo":{"host":"mongodb"}}'
+      # {"host":"mongodb" is from "links" which is defined in the next entry
+      NODE_CONFIG: |-
+        {"mongo":
+          {
+            "host":"mongodb", 
+            "database": "userservice", 
+            "username":"root", 
+            "password":"XXX-PASSWORD-XXX"
+          }
+        }
     links: 
       - mongodb
     depends_on:
@@ -21,8 +29,12 @@ services:
 
   mongodb:
     image: 'mongo:3.4.9'
-    ports:
-      - 2017:2017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: XXX-PASSWORD-XXX
+# docker exec -it <container id> mongo -u root -p XXX-PASSWORD-XXX admin
+#    ports:
+#      - 27017:27017
     volumes:
       - backend-mongodb:/data/db
 

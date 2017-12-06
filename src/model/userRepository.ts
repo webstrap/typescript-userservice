@@ -2,8 +2,7 @@ import { ObjectId } from "bson";
 import { validate } from "class-validator";
 import * as config from "config";
 import { CollectionOptions } from "mongodb";
-import { FindAndModifyWriteOpResultObject, FindManyOptions, FindOneAndReplaceOption,
-    FindOneOptions, MongoRepository, ObjectLiteral, SaveOptions } from "typeorm";
+import { FindManyOptions, FindOneOptions, MongoRepository, ObjectLiteral, SaveOptions } from "typeorm";
 import { ValidationError } from "../misc/error";
 import User from "./user";
 
@@ -52,7 +51,7 @@ export default class UserRepository {
      * Find a list of users, supports pagination
      *
      * @param optionsOrConditions filter with a partial of a User e.g. {name:"Alex"} or
-     * pass skip and take for pagination
+     * pass "skip" and "take" for pagination
      */
     public find(optionsOrConditions?: FindManyOptions<User> | Partial<User>): Promise<User[]> {
         return this.repository.find(optionsOrConditions);
@@ -76,10 +75,10 @@ export default class UserRepository {
      * usage: findOneAndUpdate({ _id: new ObjectId(idString) },
      *                          { $set: allowedFields });
      */
-    public findOneAndUpdate(query: ObjectLiteral,
-                            update: object,
-                            options?: FindOneAndReplaceOption):
-                            Promise<FindAndModifyWriteOpResultObject> {
-        return this.repository.findOneAndUpdate(query, update, options);
-    }
+    // public findOneAndUpdate(query: ObjectLiteral,
+    //                         update: object,
+    //                         options?: FindOneAndReplaceOption):
+    //                         Promise<FindAndModifyWriteOpResultObject> {
+    //     return this.repository.findOneAndUpdate(query, update, options);
+    // }
 }

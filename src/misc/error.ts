@@ -47,11 +47,11 @@ export class InvalidSessionError extends BaseError {
     }
 }
 
-export class UserNotFoundError extends BaseError {
+export class ResourceNotFoundError extends BaseError {
     public static code: number =  400;
     public status: number = 404;
-    public name: string = "User Not Found Error";
-    public message: string = "The requested user was not found";
+    public name: string = "Resource Not Found Error";
+    public message: string = "The requested resource was not found";
     constructor(message?: string) {
         super();
         if ( message ) {

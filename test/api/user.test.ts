@@ -2,6 +2,7 @@ import * as supertest from "supertest";
 import "ts-jest";
 import { ROLES } from "../../src/config/accesscontrol";
 import { AuthorizationError } from "../../src/misc/error";
+import User from "../../src/model/user";
 import { createSessionCookie } from "../util/createSessionCookie";
 
 const request = supertest.agent("http://localhost:5555");
@@ -17,8 +18,8 @@ beforeAll(async () => {
 
 describe("/users", async () => {
     it("POST should allow to create a user for a userAdmin", async (done) => {
-        const response = await request.post("/users")
-                                      .send({email: "tests@test.com", name: "API Tester"})
+        const response = await request.post(`/${User.resourceName}`)
+                                      .send({email: "tests@test.com"})
                                       .set("cookie", adminCookie);
 
         expect(response.body).toHaveProperty("email", "tests@test.com");
@@ -29,8 +30,8 @@ describe("/users", async () => {
         done();
     });
 
-    it("a normal user should be able to update his name", async (done) => {
-        const response = await request.put(`/users/${createdUserId}`)
+    it("a normal user should be able to set his name, if it is empty", async (done) => {
+        const response = await request.put(`/${User.resourceName}/${createdUserId}`)
                                       .send({name: "test put"})
                                       .set("cookie", userCookie);
 
@@ -39,8 +40,18 @@ describe("/users", async () => {
         done();
     });
 
+    it("a normal user should not be able to change his name", async (done) => {
+        const response = await request.put(`/${User.resourceName}/${createdUserId}`)
+                                      .send({name: "changed name"})
+                                      .set("cookie", userCookie);
+
+        expect(response.body).toHaveProperty("code", AuthorizationError.code);
+        expect(response.status).toBe(403);
+        done();
+    });
+
     it("a normal user should not be able to update facebook or role", async (done) => {
-        const response = await request.put(`/users/${createdUserId}`)
+        const response = await request.put(`/${User.resourceName}/${createdUserId}`)
                                       .send({facebook: "test facebook", roles: ["admin"]})
                                       .set("cookie", userCookie);
 
@@ -50,7 +61,7 @@ describe("/users", async () => {
     });
 
     it("a userAdmin can create a user, but not with admin role", async (done) => {
-        const response = await request.post(`/users`)
+        const response = await request.post(`/${User.resourceName}`)
                                       .send({email: "userAdmin@test.com", roles: [ROLES.admin]})
                                       .set("cookie", userAdminCookie);
 
@@ -62,7 +73,7 @@ describe("/users", async () => {
     });
 
     it("an userAdmin can not update roles", async (done) => {
-        const response = await request.put(`/users/${createdUserId}`)
+        const response = await request.put(`/${User.resourceName}/${createdUserId}`)
                                       .send({roles: ["admin"]})
                                       .set("cookie", userAdminCookie);
 
@@ -72,7 +83,7 @@ describe("/users", async () => {
     });
 
     it("an user can't delete any account", async (done) => {
-        const response = await request.delete(`/users/${secondUserId}`)
+        const response = await request.delete(`/${User.resourceName}/${secondUserId}`)
                                       .set("cookie", userCookie);
 
         expect(response.body).toHaveProperty("code", AuthorizationError.code);
@@ -81,30 +92,30 @@ describe("/users", async () => {
     });
 
     it("an user can delete his own account", async (done) => {
-        const response = await request.delete(`/users/${createdUserId}`)
+        const response = await request.delete(`/${User.resourceName}/${createdUserId}`)
                                       .set("cookie", userCookie);
 
         expect(response.body).toHaveProperty("n", 1);
         expect(response.status).toBe(200);
-        const verifyResponse = await request.get(`/users/${createdUserId}`);
+        const verifyResponse = await request.get(`/${User.resourceName}/${createdUserId}`);
         expect(verifyResponse.status).toBe(404);
         done();
     });
 
     it("an userAdmin can delete any account", async (done) => {
-        const response = await request.delete(`/users/${secondUserId}`)
+        const response = await request.delete(`/${User.resourceName}/${secondUserId}`)
                                       .set("cookie", userAdminCookie);
 
         expect(response.body).toHaveProperty("n", 1);
         expect(response.status).toBe(200);
-        const verifyResponse = await request.get(`/users/${secondUserId}`);
+        const verifyResponse = await request.get(`/${User.resourceName}/${secondUserId}`);
         expect(verifyResponse.status).toBe(404);
         done();
     });
 
     it("POST should not allow a request without a signature", async (done) => {
         const brokenCookie = adminCookie.replace(/session.sig.*/, "");
-        const response = await request.post("/users")
+        const response = await request.post(`/${User.resourceName}`)
                                       .send({email: "tests@test.com", name: "API Tester"})
                                       .set("cookie", brokenCookie);
 
@@ -115,7 +126,7 @@ describe("/users", async () => {
 
     it("POST should not allow a request when the roles were modified", async (done) => {
         const brokenCookie = adminCookie.replace("mFkbWluIl19fX0", "nVzZXJBZG1pbiJdfX19");
-        const response = await request.post("/users")
+        const response = await request.post(`/${User.resourceName}`)
                                       .send({email: "tests@test.com", name: "API Tester"})
                                       .set("cookie", brokenCookie);
 

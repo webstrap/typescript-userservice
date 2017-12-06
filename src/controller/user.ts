@@ -1,7 +1,7 @@
 import { ObjectId } from "bson";
 import { NextFunction, Request, Response, Router } from "express";
 import { filter, getPermission } from "../config/accesscontrol";
-import { AuthorizationError, catchError, UserNotFoundError, ValidationError } from "../misc/error";
+import { AuthorizationError, catchError, ResourceNotFoundError, ValidationError } from "../misc/error";
 import User from "../model/user";
 import UserRepository from "../model/userRepository";
 
@@ -23,10 +23,10 @@ export default class UserController {
      */
     public createRouter() {
         const router = Router();
-        router.route("/users")
+        router.route(`/${User.resourceName}`)
               .get( catchError( this.getUsers.bind(this) ) )
               .post( catchError( this.postUsers.bind(this) ) );
-        router.route( "/users/:id")
+        router.route( `/${User.resourceName}/:id`)
               .get( catchError( this.getUser.bind(this) ) )
               .put( catchError( this.putUser.bind(this) ) )
               .delete( catchError( this.deleteUser.bind(this) ) );
@@ -39,13 +39,13 @@ export default class UserController {
      * timeUpdated and version.
      */
     public async postUsers(req: Request, res: Response, next: NextFunction) {
-        const permission = getPermission({role: req.user.roles, action: "create", resource: "user"});
-        const readPermission = getPermission({role: req.user.roles, action: "read", resource: "user"});
+        const permission = getPermission({role: req.user.roles, action: "create", resource: User.resourceName});
+        const readPermission = getPermission({role: req.user.roles, action: "read", resource: User.resourceName});
         if ( permission.granted ) {
-            const user = new User(permission.filter(req.body));
-            await this.userRepository.save(user);
+            let user = new User(permission.filter(req.body));
+            user = await this.userRepository.save(user);
             // set location header to new resource
-            res.header("location", `/users/${user.id}`)
+            res.header("location", `/${User.resourceName}/${user.id}`)
                .status(201)
                .send(filter(readPermission, user));
             next();
@@ -75,7 +75,7 @@ export default class UserController {
             throw new ValidationError("offset must be a positive integer");
         }
 
-        const permission = getPermission({role: req.user.roles, action: "read", resource: "user"});
+        const permission = getPermission({role: req.user.roles, action: "read", resource: User.resourceName});
         const users = await this.userRepository.find({ skip: offset, take: limit });
         res.send( filter( permission, users ));
         next();
@@ -88,10 +88,11 @@ export default class UserController {
     public async getUser(req: Request, res: Response, next: NextFunction) {
         const user = await this.userRepository.findOneById( req.params.id );
         if ( !user ) {
-            throw new UserNotFoundError();
+            throw new ResourceNotFoundError();
         }
         const isOwn = req.user.id === req.params.id;
-        const permission = getPermission({role: req.user.roles, action: "read", resource: "user", own: isOwn });
+        const permission =
+            getPermission({role: req.user.roles, action: "read", resource: User.resourceName, own: isOwn });
         res.send( filter( permission, user ));
         next();
     }
@@ -104,30 +105,55 @@ export default class UserController {
      */
     public async putUser(req: Request, res: Response, next: NextFunction) {
         const isOwn = req.user.id === req.params.id;
-        const permission = getPermission({role: req.user.roles, action: "update", resource: "user", own: isOwn });
-        if ( permission.granted ) {
-            const allowedFields = permission.filter(req.body);
-            if ( Object.keys(allowedFields).length === 0) {
-                throw new AuthorizationError();
+        const createPermission =
+            getPermission({role: req.user.roles, action: "create", resource: User.resourceName, own: isOwn });
+        const readPermission =
+            getPermission({role: req.user.roles, action: "read", resource: User.resourceName, own: isOwn });
+        const updatePermission =
+            getPermission({role: req.user.roles, action: "update", resource: User.resourceName, own: isOwn });
+        if ( updatePermission.granted) {
+            const allowedUpdateFields = updatePermission.filter(req.body);
+            if ( Object.keys(allowedUpdateFields).length === 0) {
+                throw new AuthorizationError("no valid update fields passed");
             }
-            const resultObject = await this.userRepository.findMergeUpdate(
+            const user = await this.userRepository.findMergeUpdate(
                                 req.params.id,
-                                allowedFields);
+                                allowedUpdateFields);
 
-            res.send( filter( permission, resultObject));
+            res.send( filter( readPermission, user));
             return next();
+        }
+        if ( createPermission.granted ) {
+            const allowedCreateFields = createPermission.filter(req.body);
+            if ( Object.keys(allowedCreateFields).length === 0) {
+                throw new AuthorizationError("no valid create fields passed");
+            }
+            let user = await this.userRepository.findOneById(req.params.id) as any;
+            let userWasChanged = false;
+            Object.keys(allowedCreateFields).forEach( ( key )  => {
+                if ( !user[key] ) {
+                    user[key] = allowedCreateFields[key];
+                    userWasChanged = true;
+                }
+            });
+            if ( !userWasChanged ) {
+                throw new AuthorizationError("user was not changed");
+            }
+            user = await this.userRepository.save(user);
+            res.send( filter( readPermission, user));
         }
         throw new AuthorizationError("update not allowed");
     }
 
     public async deleteUser(req: Request, res: Response, next: NextFunction) {
         const isOwn = req.user.id === req.params.id;
-        const permission = getPermission({role: req.user.roles, action: "delete", resource: "user", own: isOwn });
+        const permission =
+            getPermission({role: req.user.roles, action: "delete", resource: User.resourceName, own: isOwn });
         if ( permission.granted ) {
             const result = await this.userRepository.deleteOne({_id: new ObjectId(req.params.id)});
             res.send(result);
             return next();
         }
-        throw new AuthorizationError("delete not allowed");
+        throw new AuthorizationError("for action delete");
     }
 }

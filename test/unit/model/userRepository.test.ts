@@ -17,9 +17,9 @@ describe("The UserRepository.save method", () => {
         } catch ( error ) {
             if ( error instanceof ValidationError ) {
                 expect((mongoRepositoryMock.save as any).mock.calls.length).toBe(0);
-                done();
             }
         }
+        done();
     });
 
     it("should throw an error for invalid users having an invalid email address", async ( done ) => {
@@ -28,9 +28,9 @@ describe("The UserRepository.save method", () => {
         } catch ( error ) {
             if ( error instanceof ValidationError ) {
                 expect((mongoRepositoryMock.save as any).mock.calls.length).toBe(0);
-                done();
             }
         }
+        done();
     });
 
     it("should call MongoRepository.save for a valid user", async ( done ) => {

@@ -3,12 +3,15 @@ FROM node:8.6.0
 EXPOSE 5555
 ARG NODE_ENV=production
 
-ADD package.json /opt/backend/
-
 WORKDIR /opt/backend/
 
-RUN npm install
+ADD package.json .
+ADD yarn.lock .
 
-ADD . /opt/backend/
 
-CMD ["npm", "run", "start:prod"]
+
+RUN yarn install
+
+ADD . .
+
+CMD ["yarn", "run", "start:prod"]

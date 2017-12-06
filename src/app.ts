@@ -6,15 +6,16 @@ import * as express from "express";
 import * as helmet from "helmet";
 import * as passport from "passport";
 import LoginController from "./controller/login";
+import MessageController from "./controller/message";
 import UserController from "./controller/user";
 import { errorRequestHandler } from "./misc/error";
+import { MessageRepository } from "./model/messageRepository";
 import UserRepository from "./model/userRepository";
 
-export function createApp( userRepository: UserRepository): express.Application {
+export function createApp( userRepository: UserRepository, messageRepository: MessageRepository): express.Application {
 
     const app: express.Application = express();
     const cookieConfig: any = config.get("cookie");
-    cookieConfig.httpOnly = true;
     cookieConfig.expires = new Date( Date.now() + 24 * 60 * 60 * 1000 );
 
     app.use(helmet());
@@ -32,6 +33,7 @@ export function createApp( userRepository: UserRepository): express.Application 
     app.use(passport.session());
 
     app.use((new UserController(userRepository)).createRouter());
+    app.use((new MessageController(messageRepository, userRepository)).createRouter());
     app.use((new LoginController(userRepository)).createRouter());
 
     app.use(errorRequestHandler);
